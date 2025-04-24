@@ -24,6 +24,13 @@ export const AuthContextProvider = (props) => {
     setUserRole(loginData.role);
   };
 
+  // 로그아웃 핸들러
+  const logoutHandler = () => {
+    localStorage.clear(); // 로컬스토리지 전체 삭제
+    setIsLoggedIn(false);
+    setUserRole('');
+  };
+
   // 첫 렌더링 시에 이전 로그인 정보를 확인해서 로그인 상태 유지 시키기.
   useEffect(() => {
     if (localStorage.getItem('ACCESS_TOKEN')) {
@@ -37,6 +44,7 @@ export const AuthContextProvider = (props) => {
       value={{
         isLoggedIn,
         onLogin: loginHandler,
+        onLogout: logoutHandler,
         userRole,
       }}
     >
@@ -44,3 +52,5 @@ export const AuthContextProvider = (props) => {
     </AuthContext.Provider>
   );
 };
+
+export default AuthContext;
