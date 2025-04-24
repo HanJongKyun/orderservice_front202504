@@ -17,6 +17,8 @@ import {
 } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
 import AuthContext from '../context/UserContext';
+import CartContext from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
 
 const ProductList = ({ pageTitle }) => {
   const [searchType, setSearchType] = useState('optional');
@@ -26,6 +28,9 @@ const ProductList = ({ pageTitle }) => {
 
   const { userRole } = useContext(AuthContext);
   const isAdmin = userRole === 'ADMIN';
+
+  const { addCart } = useContext(CartContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadProduct();
@@ -73,7 +78,12 @@ const ProductList = ({ pageTitle }) => {
 
     if (confirm('상품을 장바구니에 추가하시겠습니까?')) {
       // 카트로 상품을 보내주자.
+      finalSelected.forEach((product) => addCart(product));
       alert('선택한 상품이 장바구니에 추가되었습니다.');
+    }
+
+    if (confirm('장바구니 화면으로 이동할까요?')) {
+      navigate('/order/cart');
     }
   };
 
@@ -183,15 +193,29 @@ const ProductList = ({ pageTitle }) => {
                         value={product.quantity || 0}
                         // 수량이 변경될 때마다 productList에서 지금 수량이 변경된 그 상품을 찾아서
                         // quantity라는 새로운 프로퍼티에 값을 세팅하겠다.
-                        onChange={(e) =>
+
+                        // onChange={(e) =>
+                        //   setProductList((prevList) =>
+                        //     prevList.map((p) =>
+                        //       p.id === product.id
+                        //         ? { ...p, quantity: parseInt(e.target.value) }
+                        //         : p,
+                        //     ),
+                        //   )
+                        // }
+
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value);
+                          if (isNaN(value) || value < 0) return; // 숫자가 아니거나 음수면 무시
+
                           setProductList((prevList) =>
                             prevList.map((p) =>
                               p.id === product.id
-                                ? { ...p, quantity: parseInt(e.target.value) }
+                                ? { ...p, quantity: value }
                                 : p,
                             ),
-                          )
-                        }
+                          );
+                        }}
                         style={{ width: '70px' }}
                       />
                     </TableCell>
