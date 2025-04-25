@@ -14,6 +14,9 @@ import {
 import React, { useContext } from 'react';
 import CartContext from '../context/CartContext';
 import axios from 'axios';
+import axiosInstance from '../configs/axios-config';
+import { handleAxiosError } from '../configs/HandleAxiosError';
+import { API_BASE_URL, ORDER } from '../configs/host-config';
 
 const OrderPage = () => {
   const { productsInCart, clearCart: onClear } = useContext(CartContext);
@@ -26,7 +29,7 @@ const OrderPage = () => {
     // 백엔드가 달라는 형태로 줘야하니까 그에 맞게 객체를 매핑
     const orderProducts = productsInCart.map((p) => ({
       productId: p.id,
-      productQauntity: p.quantity,
+      productQuantity: p.quantity,
     }));
 
     if (orderProducts.length < 1) {
@@ -48,7 +51,7 @@ const OrderPage = () => {
       method: 'POST',
       headers: {
         'Content-type': 'application/json',
-        Authorization: 'Bearer' + localStorage.getItem('ACCESS_TOKEN'),
+        Authorization: 'Bearer ' + localStorage.getItem('ACCESS_TOKEN'),
       },
       body: JSON.stringify(orderProducts),
     });
@@ -56,25 +59,20 @@ const OrderPage = () => {
 
     // axios를 이용한 백엔드 요청
     // axios는 요청 방식에 따라 메서드를 제공함.
-    // (url, 전달하고자 하는 데이터(JSON으로 직접 변경X), 헤더 정보)
+    // (url, 전달하고자 하는 데이터(JSON으로 직접 변경 x), 헤더 정보)
     // axios는 200번대 정상 응답이 아닌 모든 것을 예외로 처리하기 때문에
     // try, catch로 작성합니다. (fetch는 400번대 응답에도 예외가 발생하진 않음)
     try {
-      const res = await axios.post(
-        'http://localhost:8181/order/create',
+      const res = await axiosInstance.post(
+        `${API_BASE_URL}${ORDER}/create`,
         orderProducts,
-        {
-          headers: {
-            Authorization: 'Bearer ' + localStorage.getItem('ACCESS_TOKEN'),
-          },
-        },
       );
+
       // const data = res.json(); -> fetch를 사용했을 때는 데이터를 꺼내는 과정이 있음.
       alert('주문이 완료되었습니다.');
       clearCart();
     } catch (err) {
-      console.log(err);
-      alert('주문 실패!');
+      handleAxiosError(err);
     }
   };
 

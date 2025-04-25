@@ -12,28 +12,27 @@ import {
 import axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import AuthContext from '../context/UserContext';
-import { el } from 'date-fns/locale';
 import axiosInstance from '../configs/axios-config';
+import { useNavigate } from 'react-router-dom';
+import { handleAxiosError } from '../configs/HandleAxiosError';
 
 const MyPage = () => {
   const [memberInfoList, setMemberInfoList] = useState([]);
-  const { userRole } = useContext(AuthContext);
+  const { userRole, onLogout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // 회원 정보를 불러오기
     /*
-    이름, 이메일, 도시, 상세주소 우편번호를 노출해야 합니다.
-    위 5가지 정보를 객체로 포장해서 memberInfoList에 넣어주세요.
-    */
+      이름, 이메일, 도시, 상세주소 우편번호를 노출해야 합니다.
+      위 5가지 정보를 객체로 포장해서 memberInfoList에 넣어주세요.
+      */
     const fetchMemberInfo = async () => {
       try {
         const url = userRole === 'ADMIN' ? '/list' : '/myInfo';
         const res = await axiosInstance.get('http://localhost:8181/user' + url);
 
-        console.log(res.data);
-        console.log(userRole);
-
-        // ADMIN인 경우는 애초에 리스트로 리턴, 일반회원은 직접 배열로 감싸주자.(고차함수 돌려야 하니깐)
+        // ADMIN인 경우는 애초에 리스트로 리턴, 일반회원은 직접 배열로 감싸주자.(고차함수 돌려야 되니깐)
         const data = userRole === 'ADMIN' ? res.data.result : [res.data.result];
 
         setMemberInfoList((prev) => {
@@ -52,8 +51,7 @@ const MyPage = () => {
           ]);
         });
       } catch (e) {
-        console.log(e);
-        alert('회원정보를 불러오는 데 실패했습니다.');
+        handleAxiosError(e, onLogout, navigate);
       }
     };
 

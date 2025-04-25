@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL, USER } from '../configs/host-config';
 
 const MemberCreate = () => {
   const [name, setName] = useState('');
@@ -26,7 +27,7 @@ const MemberCreate = () => {
   const memberCreate = async (e) => {
     e.preventDefault();
 
-    // 백엔드에게 전송할 데이터 형태를 만들자 ()
+    // 백엔드에게 전송할 데이터 형태를 만들자 (DTO 형태대로)
     const registData = {
       name,
       email,
@@ -38,7 +39,7 @@ const MemberCreate = () => {
       },
     };
 
-    const res = await fetch(`http://localhost:8181/user/create`, {
+    const res = await fetch(`${API_BASE_URL}${USER}/create`, {
       method: 'POST',
       headers: {
         'Content-type': 'application/json',
@@ -70,10 +71,12 @@ const MemberCreate = () => {
         }
       })
       .then((data) => {
-        console.log('백엔드로부터 전달된 데이터: ', data);
-        alert(`${data.result}님 환영합니다!`);
+        if (data) {
+          console.log('백엔드로부터 전달된 데이터: ', data);
+          alert(`${data.result}님 환영합니다!`);
+        }
       });
-      */
+    */
   };
 
   return (
