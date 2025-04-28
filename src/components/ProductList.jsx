@@ -25,6 +25,7 @@ const ProductList = ({ pageTitle }) => {
   const [searchValue, setSearchValue] = useState('');
   const [productList, setProductList] = useState([]);
   const [selected, setSelected] = useState({});
+  const [currentPage, setCurrentPage] = useState(0);
 
   const { userRole } = useContext(AuthContext);
   const isAdmin = userRole === 'ADMIN';
