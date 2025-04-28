@@ -7,7 +7,7 @@ import {
   Grid,
   TextField,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL, USER } from '../configs/host-config';
 
@@ -23,6 +23,12 @@ const MemberCreate = () => {
   // 사용자가 특정 요소를 누르지 않아도 이벤트 등에서 페이지를 이동시킬 때 사용하는 훅
   // 리턴받은 함수를 통해 원하는 url을 문자열로 전달합니다.
   const navigate = useNavigate();
+
+  const { isLoggedIn } = useContext(AuthContext);
+  if (isLoggedIn) {
+    alert('여기 왜왔죠??');
+    navigate('/', replace);
+  }
 
   const memberCreate = async (e) => {
     e.preventDefault();
