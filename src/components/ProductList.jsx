@@ -20,9 +20,8 @@ import AuthContext from '../context/UserContext';
 import CartContext from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { set } from 'date-fns';
 import { throttle } from 'lodash';
-import { se } from 'date-fns/locale';
+import { API_BASE_URL, PROD } from '../configs/host-config';
 
 const ProductList = ({ pageTitle }) => {
   const [searchType, setSearchType] = useState('optional');
@@ -30,7 +29,7 @@ const ProductList = ({ pageTitle }) => {
   const [productList, setProductList] = useState([]);
   const [selected, setSelected] = useState({});
   const [currentPage, setCurrentPage] = useState(0); // 현재 페이지를 나타내는 변수
-  const [isLastPage, setLastPage] = useState(false); // 마지막 페이지인지 여부를 나타내는 변수
+  const [isLastPage, setLastPage] = useState(false); // 마지막 페이지 여부
   // 현재 로딩중이냐? -> 백엔드로부터 상품 목록 요청을 보내서 아직 데이터를 받아오는 중인가?
   const [isLoading, setIsLoading] = useState(false);
   const pageSize = 15;
@@ -44,7 +43,7 @@ const ProductList = ({ pageTitle }) => {
   useEffect(() => {
     loadProduct(); // 처음 화면에 진입하면 1페이지 내용을 불러오자. (매개값은 필요 없음)
     // 쓰로틀링: 짧은 시간동안 연속해서 발생한 이벤트들을 일정 시간으로 그룹화 하여
-    // 순차적으로 적용할 수 있게 한느 기법 -> 스크롤 페이징
+    // 순차적으로 적용할 수 있게 하는 기법 -> 스크롤 페이징
     // 디바운싱: 짧은 시간동안 연속해서 발생한 이벤트를 호출하지 않다가 마지막 이벤트로부터
     // 일정 시간 이후에 한번만 호출하게 하는 기능. -> 입력값 검증
     const throttledScroll = throttle(scrollPagination, 1000);
@@ -58,9 +57,7 @@ const ProductList = ({ pageTitle }) => {
     // useEffect는 하나의 컴포넌트에서 여러 개 선언이 가능.
     // 스크롤 이벤트에서 다음 페이지 번호를 준비했고,
     // 상태가 바뀌면 그 때 백엔드로 요청을 보낼 수 있게 로직을 나누었습니다.
-    if (currentPage > 0) {
-      loadProduct();
-    }
+    if (currentPage > 0) loadProduct();
   }, [currentPage]);
 
   // 상품 목록을 백엔드에 요청하는 함수
@@ -81,15 +78,16 @@ const ProductList = ({ pageTitle }) => {
       params.searchName = searchValue;
     }
 
-    console.log('params', params);
+    console.log('백엔드로 보낼 params: ', params);
 
     setIsLoading(true); // 요청 보내기 바로 직전에 로딩 상태 true 만들기
 
     try {
-      const res = await axios.get('http://localhost:8181/product/list', {
+      const res = await axios.get(`${API_BASE_URL}${PROD}/list`, {
         params,
       });
       const data = await res.data;
+      console.log('result.length: ', data.result.length);
 
       if (data.result.length === 0) {
         setLastPage(true);
@@ -100,7 +98,7 @@ const ProductList = ({ pageTitle }) => {
     } catch (e) {
       console.log(e);
     } finally {
-      // 요청에 대한 응답 처리가 끝나고 난 후 로딩 상태를 다시 false로 바꿔준다.
+      // 요청에 대한 응답 처리가 끝나고 난 후 로딩 상태를 다시 false로
       setIsLoading(false);
     }
   };
@@ -149,7 +147,7 @@ const ProductList = ({ pageTitle }) => {
     }
 
     if (confirm('상품을 장바구니에 추가하시겠습니까?')) {
-      // 카트로 상품을 보내주자.
+      // 카트로 상품을 보내주자. (addCart에는 상품을 하나씩 보내세요.)
       finalSelected.forEach((product) => addCart(product));
       alert('선택한 상품이 장바구니에 추가되었습니다.');
     }
@@ -267,29 +265,15 @@ const ProductList = ({ pageTitle }) => {
                         value={product.quantity || 0}
                         // 수량이 변경될 때마다 productList에서 지금 수량이 변경된 그 상품을 찾아서
                         // quantity라는 새로운 프로퍼티에 값을 세팅하겠다.
-
-                        // onChange={(e) =>
-                        //   setProductList((prevList) =>
-                        //     prevList.map((p) =>
-                        //       p.id === product.id
-                        //         ? { ...p, quantity: parseInt(e.target.value) }
-                        //         : p,
-                        //     ),
-                        //   )
-                        // }
-
-                        onChange={(e) => {
-                          const value = parseInt(e.target.value);
-                          if (isNaN(value) || value < 0) return; // 숫자가 아니거나 음수면 무시
-
+                        onChange={(e) =>
                           setProductList((prevList) =>
                             prevList.map((p) =>
                               p.id === product.id
-                                ? { ...p, quantity: value }
+                                ? { ...p, quantity: parseInt(e.target.value) }
                                 : p,
                             ),
-                          );
-                        }}
+                          )
+                        }
                         style={{ width: '70px' }}
                       />
                     </TableCell>

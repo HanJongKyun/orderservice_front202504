@@ -4,6 +4,7 @@
 // axios 인스턴스는 token이 필요한 모든 요청에 활용 될 것입니다.
 
 import axios from 'axios';
+import { API_BASE_URL, USER } from './host-config';
 
 // Axios 인스턴스 생성
 // 이제부터 토큰이 필요한 요청은 그냥 axios가 아니라 지금 만드는 이 인스턴스로 보내겠다.
@@ -40,7 +41,7 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response, // 응답에 문제가 없다면 그대로 응답 객체 리턴.
   async (error) => {
-    console.log('reponse interceptor 동작함! 응답에 문제가 발생!');
+    console.log('response interceptor 동작함! 응답에 문제가 발생!');
     console.log(error);
 
     if (error.response.data.message === 'NO_LOGIN') {
@@ -58,7 +59,7 @@ axiosInstance.interceptors.response.use(
       try {
         const id = localStorage.getItem('USER_ID');
 
-        const res = await axios.post('http://localhost:8181/user/refresh', {
+        const res = await axios.post(`${API_BASE_URL}${USER}/refresh`, {
           id,
         });
         const newToken = res.data.result.token; // axios는 json() 안씁니다.
@@ -68,7 +69,7 @@ axiosInstance.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
 
         // axios 인스턴스의 header Authorization도 새 토큰으로 갈아 끼우자.
-        axiosInstance.defaults.headers.common.Authorization = `Bearer ${newToken}`;
+        axiosInstance.defaults.headers.Authorization = `Bearer ${newToken}`;
 
         // axiosInstance를 사용하여 다시한번 원본 요청을 보내고, 응답은 원래 호출한 곳으로 리턴
         return axiosInstance(originalRequest);
