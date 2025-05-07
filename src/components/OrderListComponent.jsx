@@ -24,6 +24,12 @@ const OrderListComponent = () => {
   const { onLogout } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const cancelOrder = async (id) => {
+    if (confirm('정말로 주문을 취소하시겠습니까?')) return;
+    const res = axiosInstance.patch(`${API_BASE_URL}${ORDER}/${id}`);
+    console.log(res);
+  };
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -62,7 +68,11 @@ const OrderListComponent = () => {
                 </TableCell>
                 <TableCell>
                   {order.orderStatus === 'ORDERED' && (
-                    <Button color='secondary' size='small'>
+                    <Button
+                      color='secondary'
+                      size='small'
+                      onClick={() => cancelOrder(order.id)}
+                    >
                       CANCEL
                     </Button>
                   )}
