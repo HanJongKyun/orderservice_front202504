@@ -18,7 +18,6 @@ import { useNavigate } from 'react-router-dom';
 import { handleAxiosError } from '../configs/HandleAxiosError';
 import axiosInstance from '../configs/axios-config';
 import { API_BASE_URL, ORDER } from '../configs/host-config';
-import { ca } from 'date-fns/locale';
 
 const OrderListComponent = () => {
   const [orderList, setOrderList] = useState([]);
@@ -26,9 +25,9 @@ const OrderListComponent = () => {
   const navigate = useNavigate();
 
   const cancelOrder = async (id) => {
-    if (!confirm('정말로 주문을 취소하시겠습니까?')) return;
+    if (!confirm('정말 취소하시겠습니까?')) return;
     try {
-      const res = axiosInstance.patch(`${API_BASE_URL}${ORDER}/${id}`);
+      const res = await axiosInstance.patch(`${API_BASE_URL}${ORDER}/${id}`);
       // 주문 취소를 백엔드로 요청하고, 문제가 없었다면 주문 목록을 다시 렌더링.
       setOrderList((prevList) => {
         return prevList.map((order) =>
@@ -36,9 +35,8 @@ const OrderListComponent = () => {
         );
         // const cancelOrder = prevList.find((order) => order.id === id);
         // cancelOrder.orderStatus = 'CANCELED';
-        // const filterd = prevList.filter((order) => order.id !== id);
-
-        // return [...filterd, cancelOrder];
+        // const filtered = prevList.filter((order) => order.id !== id);
+        // return [...filtered, cancelOrder];
       });
     } catch (e) {
       handleAxiosError(e, onLogout, navigate);
